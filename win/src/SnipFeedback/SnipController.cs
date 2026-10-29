@@ -204,8 +204,8 @@ internal sealed class SnipController : IDisposable
         var r = _sender.Send(_queue, DateTime.Now);
         switch (r.Outcome)
         {
-            case SendOutcome.NothingToSend: _notify("送るものがありません", ToolTipIcon.Info); break;                     // E-06
-            case SendOutcome.Sent: _notify("送る文と画像をコピーしました。Code タブに Ctrl＋V で貼ってください（画像は添付、送る文は .md で入ります）", ToolTipIcon.None); break;
+            case SendOutcome.NothingToSend: _notify(Sender.WithSkipped("送るものがありません", r.Skipped), ToolTipIcon.Info); break;   // E-06・R-23
+            case SendOutcome.Sent: _notify(Sender.WithSkipped("送る文と画像をコピーしました。Code タブに Ctrl＋V で貼ってください（画像は添付、送る文は .md で入ります）", r.Skipped), ToolTipIcon.None); break;
             case SendOutcome.NotWritten:   // verify S6
                 _notify($"送る文を保存できませんでした（{r.Error}）。ためた分はそのままです", ToolTipIcon.Error); break;
             case SendOutcome.SentButNotCleared:   // verify-b V12

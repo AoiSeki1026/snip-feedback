@@ -78,6 +78,8 @@ public sealed class Settings
         return fixes;
     }
 
+    private static readonly char[] BadChars = Path.GetInvalidPathChars().Concat(new[] { '?', '*', ':', '<', '>', '|', '"' }).ToArray();
+
     // 許可リストで判定する（正規化した結果が「英字・:・\」で始まるものだけ）。正規化できないものも使わない
     private static bool IsLocalDrivePath(string path)
     {
@@ -85,7 +87,9 @@ public sealed class Settings
         {
             if (!Path.IsPathFullyQualified(path)) return false;
             var full = Path.GetFullPath(path);
-            return full.Length >= 3 && char.IsAsciiLetter(full[0]) && full[1] == ':' && full[2] == '\\';
+            // ? や * を含むもの（\??\UNC\… を正規化した C:\??\UNC\… など）は保存できないので使わない（T-16、verify-c の 2）
+            return full.Length >= 3 && char.IsAsciiLetter(full[0]) && full[1] == ':' && full[2] == '\\'
+                && full.IndexOfAny(BadChars, 3) < 0;
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
     }

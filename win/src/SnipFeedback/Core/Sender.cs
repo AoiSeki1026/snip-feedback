@@ -11,7 +11,8 @@ public interface IClipboardWriter
 // NotWritten: 送る文の .md を書けなかった（verify S6）
 public enum SendOutcome { Sent, NothingToSend, SavedToFile, SentButNotCleared, NotWritten }
 
-public sealed record SendResult(SendOutcome Outcome, string? FallbackPath = null, string? Error = null);
+// Skipped: 保存先の外にあって送らず、一覧に残した件数（R-23。T-16）
+public sealed record SendResult(SendOutcome Outcome, string? FallbackPath = null, string? Error = null, int Skipped = 0);
 
 // 送信: 送る文を send-HHmmss-fff.md に書き、.md と画像をファイルとしてクリップボードに入れ、一覧を空にする（R-13〔r7〕・R-14、E-03、E-06）
 public sealed class Sender
@@ -30,7 +31,8 @@ public sealed class Sender
     {
         // R-23: 保存先の外（または reparse point を経由する）項目は送らない。送る文にも載せず（パスを渡さない）、送った後も一覧に残す
         var items = queue.Items.Where(i => SnipFiles.IsUsableImage(i.ImagePath, _saveDir)).ToList();
-        if (items.Count == 0) return new SendResult(SendOutcome.NothingToSend);   // E-06: クリップボードは変えない
+        var skipped = queue.Items.Count - items.Count;
+        if (items.Count == 0) return new SendResult(SendOutcome.NothingToSend, Skipped: skipped);   // E-06: クリップボードは変えない
         // r7: 送る文を .md に書き、その .md と画像をファイルとしてクリップボードへ（.md が先、画像は送る文の番号の順）
         // 名前にミリ秒まで付ける（同じ秒に 2 回送っても上書きしない。verify S11）
         var dir = Path.Combine(_saveDir, now.ToString("yyyyMMdd"));
@@ -52,13 +54,17 @@ public sealed class Sender
             if (_clipboard.TrySetFiles(files))
             {
                 try { queue.RemoveSent(items); }
-                catch (IOException) { return new SendResult(SendOutcome.SentButNotCleared, md); }
-                return new SendResult(SendOutcome.Sent, md);
+                catch (IOException) { return new SendResult(SendOutcome.SentButNotCleared, md, Skipped: skipped); }
+                return new SendResult(SendOutcome.Sent, md, Skipped: skipped);
             }
         }
         // E-03: 3 回とも失敗したら .md の場所を知らせ、一覧は空にしない
-        return new SendResult(SendOutcome.SavedToFile, md);
+        return new SendResult(SendOutcome.SavedToFile, md, Skipped: skipped);
     }
+
+    // 保存先の外の項目を残したときは、通知に件数を添える（一覧に残る理由が分かるように。T-16、verify-c の 3）
+    public static string WithSkipped(string message, int skipped) =>
+        skipped == 0 ? message : $"{message}（保存先の外にある {skipped} 件は送らず、一覧に残しています）";
 
     // 履歴から入れ直す（R-21・E-08、r9）。.md と、保存先の中に今在る画像を R-13 と同じ形で入れる。ためる一覧は変えない
     public ResendResult Resend(SendGroup group)

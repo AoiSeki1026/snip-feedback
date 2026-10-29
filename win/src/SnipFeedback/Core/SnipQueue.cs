@@ -56,16 +56,6 @@ public sealed class SnipQueue
         Changed?.Invoke();
     }
 
-    // 送った後に空にする。画像は残す（R-15 の 7 日間）
-    public void Clear()
-    {
-        var saved = _items.ToList();
-        _items.Clear();
-        try { Write(); }
-        catch { _items.AddRange(saved); throw; }
-        Changed?.Invoke();
-    }
-
     private void Load()
     {
         if (!File.Exists(_path)) return;

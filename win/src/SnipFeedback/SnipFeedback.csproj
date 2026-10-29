@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>SnipFeedback</AssemblyName>
-    <Version>0.3.3</Version>
+    <Version>0.3.4</Version>
     <!-- H-M33: exe とショートカットのアイコン。トレイと窓は同じ .ico を埋め込みから読む -->
     <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>

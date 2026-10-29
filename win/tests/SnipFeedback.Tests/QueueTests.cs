@@ -47,13 +47,13 @@ public class QueueTests
     }
 
     [Fact]
-    public void 空にしても画像は残す_送った後の7日間()
+    public void 送った項目を外しても画像は残す_送った後の7日間()
     {
         using var d = new TempDir();
         var a = d.File("a.png"); File.WriteAllBytes(a, new byte[] { 1 });
         var q = new SnipQueue(d.File("queue.json"));
         q.Add(Item(a));
-        q.Clear();
+        q.RemoveSent(q.Items.ToList());
         Assert.Empty(new SnipQueue(d.File("queue.json")).Items);
         Assert.True(File.Exists(a));
     }

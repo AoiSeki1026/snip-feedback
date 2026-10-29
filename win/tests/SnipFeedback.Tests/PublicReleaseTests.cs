@@ -48,7 +48,11 @@ public class PublicReleaseTests
     [InlineData(@"\\??\\UNC\\server\\share\\snips")]   // verify-b: NT の名前空間の形
     [InlineData(@"\\??\\C:\\snips")]
     [InlineData(@"\\\\.\\C:\\snips")]
-    public void UNC_の保存先は既定に正して知らせる(string jsonPath)
+    [InlineData(@"C:\\..\\..\\??\\UNC\\server\\share")]   // T-16（verify-c の 2）: 正規化すると C:\??\UNC\… になる
+    [InlineData(@"C:\\snips\\a*b")]
+    [InlineData(@"C:\\snips?")]
+    [InlineData(@"C:\\snips\\a:b")]
+    public void UNC_や保存できない文字を含む保存先は既定に正して知らせる(string jsonPath)
     {
         using var d = new TempDir();
         File.WriteAllText(d.File("config.json"), "{ \"saveDir\": \"" + jsonPath + "\" }");
@@ -76,6 +80,47 @@ public class PublicReleaseTests
         Assert.DoesNotContain(secret, md);
         Assert.Contains("切り取り 1 件", md);
         Assert.Equal(new[] { secret }, q.Items.Select(i => i.ImagePath));
+        Assert.Equal(1, r.Skipped);   // T-16: 通知に添える件数
+    }
+
+    [Fact]
+    public void 通知には_保存先の外に残した件数を添える_無ければそのまま()
+    {
+        Assert.Equal("送るものがありません", Sender.WithSkipped("送るものがありません", 0));
+        Assert.Equal("送るものがありません（保存先の外にある 2 件は送らず、一覧に残しています）", Sender.WithSkipped("送るものがありません", 2));
+    }
+
+    [Fact]
+    public void 保存先の中の項目だけなら_残した件数は_0()
+    {
+        using var d = new TempDir();
+        var q = new SnipQueue(d.File("queue.json"));
+        q.Add(Item(Png(d.File("20261029"), "090000-000.png")));
+        Assert.Equal(0, new Sender(new FakeClipboard(), d.Path, _ => { }).Send(q, new DateTime(2026, 10, 29, 9, 1, 0)).Skipped);
+    }
+
+    [Theory]
+    [InlineData("snips フォルダ")]
+    [InlineData("末尾の区切り\\")]
+    [InlineData("長い")]   // 260 文字を超えるパス（verify T-16 の任意 3）
+    public void 普通の保存先は_そのまま使う(string name)
+    {
+        using var d = new TempDir();
+        var dir = d.File(name == "長い" ? Path.Combine(Enumerable.Repeat(new string('a', 60), 5).ToArray()) : name);
+        File.WriteAllText(d.File("config.json"), "{ \"saveDir\": \"" + dir.Replace(@"\", @"\\") + "\" }");
+        var s = Settings.Load(d.File("config.json"), out var error);
+        Assert.Equal(dir, s.SaveDir);
+        Assert.Null(error);
+    }
+
+    [Fact]
+    public void ドライブの直下も_そのまま使う()
+    {
+        using var d = new TempDir();
+        File.WriteAllText(d.File("config.json"), "{ \"saveDir\": \"C:\\\\\" }");
+        var s = Settings.Load(d.File("config.json"), out var error);
+        Assert.Equal(@"C:\", s.SaveDir);
+        Assert.Null(error);
     }
 
     [Fact]
@@ -89,6 +134,7 @@ public class PublicReleaseTests
         var clip = new FakeClipboard();
         var r = new Sender(clip, d.Path, _ => { }).Send(q, new DateTime(2026, 10, 29, 9, 1, 0));
         Assert.Equal(SendOutcome.NothingToSend, r.Outcome);
+        Assert.Equal(1, r.Skipped);
         Assert.Null(clip.Files);
         Assert.Single(q.Items);
     }
