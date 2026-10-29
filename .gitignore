@@ -1,0 +1,12 @@
+node_modules/
+test-results/
+playwright-report/
+# 手元の記録・設定・送ったもの（公開前の調査 H-M41 の勧め）
+.claude/
+.env*
+*.log
+_snips/
+queue.json*
+send-*.md
+Thumbs.db
+.vs/

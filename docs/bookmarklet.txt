@@ -1,0 +1,1 @@
+javascript:(()=>{if(window.__feedbackTool)return;const s=document.createElement('script');s.src='http://127.0.0.1:8799/feedback.js?'+Date.now();s.onerror=()=>alert('feedback.js を読めません。デスクトップの「画面赤枠フィードバック」で起動してください');document.documentElement.appendChild(s);})()

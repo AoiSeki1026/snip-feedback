@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>H-5 貼り付け確認</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 32px auto; padding: 0 16px; line-height: 1.7; color: #222; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; margin-top: 28px; border-left: 4px solid #e53935; padding-left: 8px; }
+  button { font-size: 15px; padding: 8px 16px; cursor: pointer; }
+  #msg { margin-top: 8px; font-weight: bold; }
+  .box { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .target { background: #f3f6fb; padding: 24px; border-radius: 8px; }
+</style>
+</head>
+<body>
+<h1>H-5: Code タブの入力欄への貼り付け確認</h1>
+
+<h2>A. 1回で両方入るか（本題）</h2>
+<div class="box">
+  <button id="both">画像＋テキストを1回でコピー</button>
+  <div id="msg"></div>
+  <ol>
+    <li>上のボタンを押す</li>
+    <li>Claude デスクトップの Code タブ入力欄で <b>Ctrl+V を1回</b></li>
+    <li>入ったものを返す: 両方 ／ 画像のみ ／ テキストのみ</li>
+  </ol>
+</div>
+
+<h2>B. 本ツールの送信（参考）</h2>
+<div class="box target">
+  <p>この枠の中を Alt+ドラッグ → 一言 → Enter → Ctrl+Enter → Code タブで Ctrl+V（画像とテキストが1回で入る）。</p>
+  <p id="sample">サンプルの段落。ここを赤枠で囲んでみてください。</p>
+</div>
+
+<script>
+  var TEXT = '[H-5] Code タブ貼り付け確認のテキスト部分です。これが見えればテキストも入っています。';
+  document.getElementById('both').onclick = function () {
+    var msg = document.getElementById('msg');
+    var c = document.createElement('canvas'); c.width = 360; c.height = 120;
+    var g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 360, 120);
+    g.strokeStyle = '#e53935'; g.lineWidth = 4; g.strokeRect(10, 10, 340, 100);
+    g.fillStyle = '#222'; g.font = 'bold 20px system-ui, sans-serif'; g.fillText('H-5 画像部分', 110, 68);
+    c.toBlob(function (png) {
+      var item = new ClipboardItem({
+        'image/png': png,
+        'text/plain': new Blob([TEXT], { type: 'text/plain' })
+      });
+      navigator.clipboard.write([item]).then(function () {
+        msg.textContent = 'コピーしました（画像＋テキストを1つの項目で）。Code タブで Ctrl+V を1回。';
+      }, function (e) {
+        msg.textContent = 'コピーに失敗: ' + e.message;
+      });
+    }, 'image/png');
+  };
+</script>
+<script src="/dist/feedback.js"></script>
+</body>
+</html>

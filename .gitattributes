@@ -1,0 +1,7 @@
+# 改行はリポジトリでは LF。作業コピーは各自の設定（core.autocrlf）に任せる
+* text=auto
+# ビルドで作るものはリポジトリでも作業コピーでも LF（ビルドし直しても差分が出ないように）。バイナリ・UTF-16 のスクリプトは変換しない
+dist/** text eol=lf
+*.vbs -text
+*.ico binary
+*.png binary

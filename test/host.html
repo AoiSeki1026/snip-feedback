@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>feedback host</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; }
+  header { height: 60px; background: #1e293b; color: #fff; display: flex; align-items: center; padding: 0 20px; }
+  main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+  .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; height: 200px; }
+  button.primary { background: #2563eb; color: #fff; border: 0; padding: 8px 14px; border-radius: 6px; }
+  #log { position: fixed; left: 0; bottom: 0; font-size: 11px; color: #999; }
+</style>
+</head>
+<body>
+<header><h1 id="title" data-src="src/App.tsx:12">ダッシュボード</h1></header>
+<main>
+  <section class="card" id="card-a" data-src="src/CardA.tsx:3"><h2>売上</h2><p>今月の売上は 1,234,567 円です。</p><button class="primary" data-testid="refresh">更新</button></section>
+  <section class="card" id="card-b"><h2>タスク</h2><ul><li>要件定義</li><li>実装</li><li>検証</li></ul></section>
+  <section class="card"><h2>グラフ</h2><canvas id="chart" width="200" height="100"></canvas><svg id="fig" width="120" height="60" style="display:block"><rect id="fig-bar" x="0" y="0" width="120" height="60" fill="#10b981"/></svg></section>
+  <section class="card"><h2>メモ</h2><textarea id="memo" rows="4" cols="30" placeholder="スライド全体への一言"></textarea><input id="q" placeholder="ここに入力" style="display:block;margin-top:8px;width:200px;font-size:16px"></section>
+</main>
+<p id="long" style="margin:0 20px;font-size:12px">あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨ</p>
+<div id="log"></div>
+<script>
+  // ホスト側ショートカットの検知（R-20 のテスト用）
+  window.__hostKeys = [];
+  document.addEventListener('keydown', function (e) { window.__hostKeys.push((e.ctrlKey ? 'Ctrl+' : '') + (e.altKey ? 'Alt+' : '') + e.key); });
+  var c = document.getElementById('chart').getContext('2d'); c.fillStyle = '#60a5fa'; c.fillRect(10, 30, 50, 60); c.fillStyle = '#f59e0b'; c.fillRect(80, 10, 50, 80);
+</script>
+<script src="../dist/feedback.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "name": "feedback-system",
+  "version": "0.6.10",
+  "description": "視覚フィードバック入力ツール feedback.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs && playwright test",
+    "test:chrome": "node run-test-chrome.mjs",
+    "h3": "node tools/h3-compare.mjs",
+    "serve": "node serve.mjs",
+    "embed": "node tools/embed-artifact.mjs",
+    "launch": "node serve.mjs --launch",
+    "shortcuts": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/install-shortcuts.ps1"
+  },
+  "keywords": [],
+  "author": "AoiSeki1026",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AoiSeki1026/snip-feedback.git"
+  },
+  "homepage": "https://github.com/AoiSeki1026/snip-feedback",
+  "license": "MIT",
+  "dependencies": {
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module"
+}
