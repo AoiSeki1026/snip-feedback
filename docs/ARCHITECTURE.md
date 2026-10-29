@@ -9,7 +9,7 @@
 | `src/feedback.js` | 本体（依存なし）。ページの上に注釈の層を重ね、Alt＋ドラッグの赤枠・一言・送信を扱う。送信で、html2canvas でページを画像にし、赤枠と番号を焼き込んだ PNG と送信テキストを 1 つのクリップボード項目にする |
 | `build.mjs` | html2canvas 1.4.1 を先頭に連結して `dist/feedback.js` と、アーティファクトに埋め込む `dist/feedback.inline.html` を作る |
 | `serve.mjs` | 配布サーバ。127.0.0.1 だけで待ち受け、`/feedback.js`・案内ページ・`/health`・`/stop`・`/events` を返す。案内ページがすべて閉じたら止まる |
-| `tools/launch.vbs`・`install-shortcuts.ps1`・`set-window-id.ps1` | Windows のショートカットからコンソールを出さずに起動し、案内の窓をタスクバーで独立させる |
+| `tools/launch.vbs`・`install-shortcuts.ps1`・`set-window-id.ps1`・`tag-window.mjs` | Windows のショートカットからコンソールを出さずに起動し、案内の窓をタスクバーで独立させる |
 | `docs/bookmarklet.txt` | ブックマークレットの 1 行（配布サーバから本体を読み込むだけ。中身はテストで固定） |
 
 守っていること:

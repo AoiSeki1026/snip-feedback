@@ -103,7 +103,7 @@ test('起動 r7b: bookmarklet.txt が読めなくても案内ページは落ち�
   const { mkdtempSync, cpSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const dir = mkdtempSync(join(tmpdir(), 'fb-srv-'));
-  for (const f of ['serve.mjs', 'package.json']) cpSync(join(ROOT, f), join(dir, f));
+  for (const f of ['serve.mjs', 'package.json', 'tools/tag-window.mjs']) cpSync(join(ROOT, f), join(dir, f), { recursive: true });   // tag-window.mjs は serve.mjs が読む（T-20）
   cpSync(join(ROOT, 'dist'), join(dir, 'dist'), { recursive: true });
   const { spawn } = await import('node:child_process');
   const port = (await P(8796));

@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
+import { runTagger } from './tools/tag-window.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.FB_PORT || 8799);
@@ -41,23 +42,14 @@ function openPage(watch) {
 // 案内の窓に専用の AppUserModelID とアイコンを付ける（H-M38、r16 R-23）。Edge は 127.0.0.1 の --app 窓すべてに
 // 同じ ID（MSEdge.127.0.0.1_/）を付けるので、そのままだとタスクバーでスライド赤枠レビューなどと同じボタン・同じアイコンになる。
 // 初回の起動では、配布サーバが動いている間ずっと見張る（2 回目の起動で開いた窓や、Edge が ID を付け直した窓にも付け直す。verify-h-m38 N1）。
-// 付けられなくても案内の窓はそのまま使える。
-// detached にすると PowerShell がコンソール無しで起動し、付けられない（2026-10-20 に確かめた）。切り離さずに隠して起動するので、
-// node が終わると一緒に終わる。2 回目の起動（ALREADY）では 1 回付け終わるのを待ってから抜ける（最長 25 秒。verify-h-m38 N3）
-const TAG_ONCE_LIMIT_MS = 25000;
+// 付けられなくても案内の窓はそのまま使える。起動と待ち方は tools/tag-window.mjs（2 回目の起動では最長 25 秒待つ）
 function tagWindow(watch) {
   const sys32 = join(process.env.SystemRoot || 'C:\\Windows', 'System32');
   const ps = join(sys32, 'WindowsPowerShell', 'v1.0', 'powershell.exe');
   const relaunch = `"${join(sys32, 'wscript.exe')}" "${join(ROOT, 'tools', 'launch.vbs')}" "${process.execPath}"`;   // ショートカットと同じ起動
   const args = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(ROOT, 'tools', 'set-window-id.ps1'),
     '-Title', TITLE, '-Icon', ICON, '-Command', relaunch, ...(watch ? ['-WatchPid', String(process.pid)] : [])];
-  const p = spawn(ps, args, { stdio: 'ignore', windowsHide: true });
-  if (watch) { p.on('error', () => {}); p.unref(); return Promise.resolve(); }   // 配布サーバの終わりを妨げない
-  return new Promise((done) => {
-    const limit = setTimeout(() => { p.kill(); done(); }, TAG_ONCE_LIMIT_MS);
-    const end = () => { clearTimeout(limit); done(); };
-    p.on('error', end); p.on('exit', end);   // unref しない（待っている間に node が抜けないように）
-  });
+  return runTagger(ps, args, { watch });
 }
 
 // --launch のとき、開いている案内ページ（/events の接続）がすべて閉じたら配布サーバを止める（H-M22）。
